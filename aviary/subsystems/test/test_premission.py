@@ -16,11 +16,7 @@ from aviary.subsystems.propulsion.utils import build_engine_deck
 from aviary.utils.aviary_values import get_items, get_keys
 from aviary.utils.functions import set_aviary_initial_values
 from aviary.utils.preprocessors import preprocess_options
-from aviary.validation_cases.validation_tests import (
-    get_flops_case_names,
-    get_flops_inputs,
-    get_flops_outputs,
-)
+from aviary.validation_cases.validation_tests import get_flops_case_names, get_flops_inputs
 from aviary.variable_info.enums import LegacyCode
 from aviary.variable_info.functions import setup_model_options
 from aviary.variable_info.variable_meta_data import _MetaData as BaseMetaData
@@ -70,10 +66,12 @@ class PreMissionTestCase(unittest.TestCase):
         input_options.delete(Aircraft.Wing.ULTIMATE_LOAD_FACTOR)
         input_options.delete(Aircraft.Fuel.TOTAL_CAPACITY)
         input_options.delete(Aircraft.Nacelle.AVG_LENGTH)
+        input_options.delete(Aircraft.HorizontalTail.AREA)
+        input_options.delete(Aircraft.VerticalTail.AREA)
 
-        engine = build_engine_deck(input_options)
+        engines = [build_engine_deck(input_options)]
 
-        prop = CorePropulsionBuilder('core_propulsion', BaseMetaData, engine)
+        prop = CorePropulsionBuilder('core_propulsion', BaseMetaData, engines)
         mass = CoreMassBuilder('core_mass', BaseMetaData, GASP)
         aero = CoreAerodynamicsBuilder('core_aerodynamics', BaseMetaData, FLOPS)
         geom = CoreGeometryBuilder(
@@ -111,6 +109,9 @@ class PreMissionTestCase(unittest.TestCase):
         self.prob.model.set_input_defaults(Aircraft.Wing.SPAN, val=1.0, units='ft')
         self.prob.model.set_input_defaults(Aircraft.Wing.SLAT_SPAN_RATIO, val=0.9)
         self.prob.model.set_input_defaults(Aircraft.Wing.SLAT_CHORD_RATIO, val=0.15)
+        self.prob.model.set_input_defaults(
+            Aircraft.Electrical.SYSTEM_MASS_PER_PASSENGER, val=16.0, units='lbm'
+        )
 
         setup_model_options(self.prob, input_options)
 
@@ -122,7 +123,7 @@ class PreMissionTestCase(unittest.TestCase):
         # We set it to an unconverged value to test convergence.
         self.prob.set_val(Mission.Design.GROSS_MASS, val=1000.0)
 
-        # Set inital values for all variables.
+        # Set initial values for all variables.
         set_aviary_initial_values(self.prob, input_options)
 
         # Adjust WETTED_AREA_SCALER such that WETTED_AREA = 4000.0
@@ -161,14 +162,14 @@ class PreMissionTestCase(unittest.TestCase):
         # fuel values:
         # modified from GASP value to account for updated crew mass. GASP value is
         # 78843.6
-        assert_near_equal(self.prob['fuel_mass.fuel_and_oem.OEM_wingfuel_mass'], 78145.0, tol)
+        assert_near_equal(self.prob['fuel_mass.fuel_and_oem.OEM_wingfuel_mass'], 77977.7, tol)
         # modified from GASP value to account for updated crew mass. GASP value is
         # 102408.05695930264
-        assert_near_equal(self.prob['fuel_mass.fus_mass_full'], 102663.6529626, tol)
+        assert_near_equal(self.prob['fuel_mass.fus_mass_full'], 102812.6654177, tol)
         # modified from GASP value to account for updated crew mass. GASP value is
         # 1757
         assert_near_equal(
-            self.prob[Aircraft.Fuel.FUEL_SYSTEM_MASS], 1727.9, tol
+            self.prob[Aircraft.Fuel.FUEL_SYSTEM_MASS], 1721.08, tol
         )  # modified from GASP value to account for updated crew mass. GASP value is 1757
         assert_near_equal(self.prob[Aircraft.Design.STRUCTURE_MASS], 50931.4, tol)
         assert_near_equal(
@@ -178,25 +179,25 @@ class PreMissionTestCase(unittest.TestCase):
         # modified from GASP value to account for updated crew mass. GASP value is
         # 42843.6
         assert_near_equal(
-            self.prob[Mission.Design.FUEL_MASS_REQUIRED], 42145.0, tol
+            self.prob[Mission.Design.FUEL_MASS_REQUIRED], 41977.7, tol
         )  # modified from GASP value to account for updated crew mass. GASP value is 42843.6
         assert_near_equal(
             self.prob[Aircraft.Propulsion.MASS], 16098.7, tol
         )  # modified from GASP value to account for updated crew mass. GASP value is 16127
         assert_near_equal(
-            self.prob[Mission.Design.FUEL_MASS], 42145.0, tol
+            self.prob[Mission.Design.FUEL_MASS], 41977.68, tol
         )  # modified from GASP value to account for updated crew mass. GASP value is 42844.0
         assert_near_equal(
-            self.prob['fuel_mass.fuel_mass_min'], 32105.0, tol
+            self.prob['fuel_mass.fuel_mass_min'], 31937.68, tol
         )  # modified from GASP value to account for updated crew mass. GASP value is 32803.6
         assert_near_equal(
-            self.prob[Aircraft.Fuel.WING_VOLUME_DESIGN], 842.53, tol
+            self.prob[Aircraft.Fuel.WING_VOLUME_DESIGN], 839.18, tol
         )  # modified from GASP value to account for updated crew mass. GASP value is 856.4910800459031
         assert_near_equal(
-            self.prob['fuel_mass.fuel_and_oem.OEM_fuel_vol'], 1562.21, tol
+            self.prob['fuel_mass.fuel_and_oem.OEM_fuel_vol'], 1558.86, tol
         )  # modified from GASP value to account for updated crew mass. GASP value is 1576.1710061411081
         assert_near_equal(
-            self.prob[Aircraft.Design.OPERATING_MASS], 97255.0, tol
+            self.prob[Aircraft.Design.OPERATING_MASS], 97422.32, tol
         )  # modified from GASP value to account for updated crew mass. GASP value is 96556.0
         # extra_fuel_mass calculated differently in this version, so test for fuel_mass.fuel_and_oem.payload_mass_max_fuel not included
         assert_near_equal(self.prob['fuel_mass.fuel_and_oem.volume_wingfuel_mass'], 57066.3, tol)
@@ -213,7 +214,7 @@ class PreMissionTestCase(unittest.TestCase):
         assert_check_partials(partial_data, atol=3e-10, rtol=1e-12)
 
     def test_manual_override(self):
-        # Problem in setup is GASP prioritized, so shared inputs for FLOPS will be manually overriden.
+        # Problem in setup is GASP prioritized, so shared inputs for FLOPS will be manually overridden.
 
         outs = self.prob.model.pre_mission.list_outputs(
             includes='*gasp*fuselage:avg_diam*', prom_name=True, out_stream=None
@@ -269,13 +270,13 @@ class PreMissionTestCase(unittest.TestCase):
         aviary_inputs = setup_options(GASP_input, FLOPS_input)
 
         aviary_inputs.delete(Aircraft.Fuselage.WETTED_AREA)
-        engine = build_engine_deck(aviary_inputs)
-        preprocess_options(aviary_inputs, engine_models=engine)
+        engines = [build_engine_deck(aviary_inputs)]
+        preprocess_options(aviary_inputs, engine_models=engines)
 
         prob = om.Problem()
         model = prob.model
 
-        prop = CorePropulsionBuilder('core_propulsion', BaseMetaData, engine)
+        prop = CorePropulsionBuilder('core_propulsion', BaseMetaData, engines)
         mass = CoreMassBuilder('core_mass', BaseMetaData, GASP)
         aero = CoreAerodynamicsBuilder('core_aerodynamics', BaseMetaData, FLOPS)
         geom = CoreGeometryBuilder(
@@ -313,7 +314,7 @@ class PreMissionTestCase(unittest.TestCase):
 
         prob.setup()
 
-        # Problem in setup is FLOPS prioritized, so shared inputs for FLOPS will be manually overriden.
+        # Problem in setup is FLOPS prioritized, so shared inputs for FLOPS will be manually overridden.
 
         outs = prob.model.pre_mission.list_outputs(
             includes='*gasp*fuselage:avg_diam*', prom_name=True, out_stream=None
