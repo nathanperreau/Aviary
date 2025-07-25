@@ -20,7 +20,7 @@ prob.add_post_mission_systems()
 # Link phases and variables
 prob.link_phases()
 
-prob.add_driver('SNOPT', max_iter=50)
+prob.add_driver('IPOPT', max_iter=50)
 
 prob.add_design_variables()
 
@@ -34,4 +34,4 @@ prob.set_initial_guesses()
 prob.model.list_vars(units=True, print_arrays=True)
 prob.run_aviary_problem()
 prob.list_driver_vars()
-prob.model.list_vars(units=True, print_arrays=True)
+# prob.model.list_vars(units=True, print_arrays=True)

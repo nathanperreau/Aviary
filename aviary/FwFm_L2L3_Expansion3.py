@@ -156,6 +156,24 @@ prob.traj._phases['climb'].set_state_options(
     Dynamic.Vehicle.MASS, fix_initial=False, input_initial=False
 )
 
+prob.traj._phases['climb'].set_time_options(
+    fix_initial=False,
+    initial_bounds=(0, 0),
+    initial_ref=600,
+    duration_bounds=(3840, 11520),
+    duration_ref=7680.0,
+)
+
+prob.traj._phases['cruise'].set_time_options(
+    duration_bounds=(3390, 10170),
+    duration_ref=6780.0,
+)
+
+prob.traj._phases['descent'].set_time_options(
+    duration_bounds=(1740, 5220),
+    duration_ref=3480.0,
+)
+
 eq = prob.model.add_subsystem(
     f'link_climb_mass',
     om.EQConstraintComp(),
@@ -303,7 +321,7 @@ prob.model.connect(
 ##########
 # prob.add_driver('IPOPT', max_iter=50)
 prob.driver = om.pyOptSparseDriver()
-prob.driver.options['optimizer'] = 'SNOPT'
+prob.driver.options['optimizer'] = 'IPOPT'
 prob.driver.declare_coloring(show_summary=False)
 prob.driver.opt_settings['print_user_options'] = 'no'
 prob.driver.opt_settings['print_frequency_iter'] = 10
@@ -315,12 +333,12 @@ prob.driver.opt_settings['nlp_scaling_method'] = 'gradient-based'
 prob.driver.opt_settings['alpha_for_y'] = 'safer-min-dual-infeas'
 prob.driver.opt_settings['mu_strategy'] = 'monotone'
 # prob.driver.options['print_results'] = 'minimal'
-prob.driver.opt_settings['iSumm'] = 6
-prob.driver.opt_settings['iPrint'] = 0
+# prob.driver.opt_settings['iSumm'] = 6
+# prob.driver.opt_settings['iPrint'] = 0
 # Optimizer Settings #
-prob.driver.opt_settings['Major iterations limit'] = 50
-prob.driver.opt_settings['Major optimality tolerance'] = 1e-4
-prob.driver.opt_settings['Major feasibility tolerance'] = 1e-7
+# prob.driver.opt_settings['Major iterations limit'] = 50
+# prob.driver.opt_settings['Major optimality tolerance'] = 1e-4
+# prob.driver.opt_settings['Major feasibility tolerance'] = 1e-7
 ##########
 # prob.add_design_variables()
 prob.model.add_design_var(
@@ -456,4 +474,4 @@ prob.verbosity = Verbosity.VERBOSE
 prob.model.list_vars(units=True, print_arrays=True)
 prob.run_aviary_problem()
 prob.list_driver_vars()
-prob.model.list_vars(units=True, print_arrays=True)
+# prob.model.list_vars(units=True, print_arrays=True)
