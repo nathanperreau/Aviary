@@ -7,13 +7,16 @@ from openmdao.core.problem import _clear_problem_names
 from openmdao.utils.assert_utils import assert_near_equal
 from openmdao.utils.testing_utils import require_pyoptsparse, use_tempdirs
 
-from aviary.models.missions.height_energy_default import phase_info
 from aviary.interface.methods_for_level2 import AviaryProblem
-from aviary.models.aircraft.multi_engine_single_aisle.multi_engine_single_aisle_data import (
+from aviary.models.aircraft.test_aircraft.FLOPS_multiengine import (
     engine_1_inputs,
     engine_2_inputs,
     inputs,
 )
+from aviary.models.aircraft.test_aircraft.GASP_multiengine import engines as GASP_engines
+from aviary.models.aircraft.test_aircraft.GASP_multiengine import inputs as GASP_inputs
+from aviary.models.missions.height_energy_default import phase_info
+from aviary.models.missions.two_dof_default import phase_info as GASP_phase_info
 from aviary.subsystems.propulsion.utils import build_engine_deck
 from aviary.variable_info.enums import ThrottleAllocation
 from aviary.variable_info.variables import Aircraft
@@ -45,7 +48,27 @@ inputs.set_val(Aircraft.Nacelle.LAMINAR_FLOW_UPPER, np.zeros(2))
 
 
 @use_tempdirs
-class MultiengineTestcase(unittest.TestCase):
+class GASPMultiEngineTest(unittest.TestCase):
+    """
+    Temporary test to verify GASP multiengine is working. Will be replaced by hybrid-electric
+    regional turboprop model benchmark test.
+    """
+
+    def test_multiengine_GASP(self):
+        prob = AviaryProblem(verbosity=0)
+        prob.load_inputs(GASP_inputs, GASP_phase_info, GASP_engines)
+        prob.check_and_preprocess_inputs()
+        prob.build_model()
+        prob.add_driver('SNOPT', max_iter=50, use_coloring=True)
+        prob.add_design_variables()
+        prob.add_objective()
+        prob.setup()
+        prob.run_aviary_problem()
+        self.assertTrue(prob.result.success)
+
+
+@use_tempdirs
+class MultiengineThrottleTestcase(unittest.TestCase):
     """Test the different throttle allocation methods for models with multiple, unique EngineModels."""
 
     def setUp(self):
