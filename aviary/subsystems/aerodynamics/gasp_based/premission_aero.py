@@ -7,7 +7,7 @@ the dynamic aero.
 import openmdao.api as om
 
 from aviary.subsystems.aerodynamics.gasp_based.flaps_model import FlapsGroup
-from aviary.subsystems.aerodynamics.gasp_based.gasp_aero_coeffs import AeroFormfactors
+from aviary.subsystems.aerodynamics.gasp_based.aero_form_factors import AeroFormfactors
 from aviary.subsystems.aerodynamics.gasp_based.interference import (
     WingFuselageInterferencePremission,
 )
