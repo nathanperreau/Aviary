@@ -767,9 +767,9 @@ class AeroGeomTest(unittest.TestCase):
         assert_near_equal(prob['SA2'], [-0.13650645, -0.13650645], tol)
         assert_near_equal(prob['SA3'], [0.03398855, 0.03398855], tol)
         assert_near_equal(prob['SA4'], [0.10197432, 0.10197432], tol)
-        assert_near_equal(prob['SA5'], [0.00861455, 0.00861455], tol)
+        assert_near_equal(prob['SA5'], [0.00949044, 0.00949044], tol)
         assert_near_equal(prob['SA6'], [2.09276756, 2.09276756], tol)
-        assert_near_equal(prob['SA7'], [0.04011329, 0.04011329], tol)
+        assert_near_equal(prob['SA7'], [0.04044612, 0.04044612], tol)
 
 
 class BWBAeroSetupTest(unittest.TestCase):

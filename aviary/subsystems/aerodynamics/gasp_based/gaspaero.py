@@ -1031,7 +1031,8 @@ class AeroGeom(om.ExplicitComponent):
             siwb,
         ) = inputs.values()
         num_nodes = self.options['num_nodes']
-        num_engine_types = len(self.options[Aircraft.Engine.NUM_ENGINES])
+        num_engines = self.options[Aircraft.Engine.NUM_ENGINES]
+        num_engine_types = len(num_engines)
         # skin friction coeff at Re = 10**7
         cf = 0.455 / 7**2.58 / (1 + 0.144 * mach**2) ** 0.65
 
@@ -1083,7 +1084,7 @@ class AeroGeom(om.ExplicitComponent):
         few = ff_wing * wing_area * cf * fwre
         fen = np.ones((num_nodes, num_engine_types), dtype=dtype)
         for i in range(num_engine_types):
-            fen[i] = 2 * ff_nac[i] * nacelle_area[i] * cf * fnre[i]
+            fen[i] = num_engines[i] * ff_nac[i] * nacelle_area[i] * cf * fnre[i]
         fevt = ff_vtail * vtail_area * cf * fvtre
         feht = ff_htail * htail_area * cf * fhtre
         festrt = strut_fus_intf * strut_wing_area_ratio * wing_area * cf * fstrtre
@@ -1097,20 +1098,8 @@ class AeroGeom(om.ExplicitComponent):
         # end INTERFERENCE
 
         # total flat plate equivalent area
-        # In GASP, nacelle is excluded.
-        # BUG nacelle is clearly being used here?
-        # Because the original equations appear to not take number of nacelles into account, nacelle
-        # flat plate equivalent area is averaged across engine types
-        fe = (
-            few
-            + fef
-            + fevt
-            + feht
-            + (fen.sum(axis=0) / num_engine_types)
-            + feiwf
-            + festrt
-            + cd0_inc * wing_area
-        )
+        # In GASP, nacelle was excluded.
+        fe = few + fef + fevt + feht + fen.sum(axis=0) + feiwf + festrt + cd0_inc * wing_area
 
         # wfob = cabin_width / wingspan
         # siwb = 1 - 0.0088 * wfob - 1.7364 * wfob**2 - 2.303 * wfob**3 + 6.0606 * wfob**4
