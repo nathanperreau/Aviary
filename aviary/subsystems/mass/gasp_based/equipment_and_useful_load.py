@@ -30,7 +30,7 @@ def get_num_of_pilots(num_pax, engine_type):
     num_pilots = 1
     if num_pax > 9.0:
         num_pilots = 2
-    if engine_type is GASPEngineType.TURBOJET and num_pax > 5.0:
+    if GASPEngineType.TURBOJET in engine_type and num_pax > 5.0:
         num_pilots = 2
     if num_pax >= 351.0:
         num_pilots = 3
@@ -123,7 +123,7 @@ class EquipMassPartialSum(om.ExplicitComponent):
         subsystems_wt = inputs[Aircraft.Design.EXTERNAL_SUBSYSTEMS_MASS]
         elec_mass_coeff = inputs[Aircraft.Electrical.SYSTEM_MASS_PER_PASSENGER] * GRAV_ENGLISH_LBM
 
-        engine_type = self.options[Aircraft.Engine.TYPE][0]
+        engine_type = self.options[Aircraft.Engine.TYPE]
 
         if PAX > 35.0:
             APU_wt = 26.2 * PAX**0.944 - 13.6 * PAX
@@ -253,7 +253,7 @@ class EquipMassPartialSum(om.ExplicitComponent):
         htail_area = inputs[Aircraft.HorizontalTail.AREA]
         vtail_area = inputs[Aircraft.VerticalTail.AREA]
 
-        engine_type = self.options[Aircraft.Engine.TYPE][0]
+        engine_type = self.options[Aircraft.Engine.TYPE]
 
         dAPU_wt_dmass_coeff_0 = 0.0
         # TODO The following if-block should be removed. Aircraft.APU.MASS should be output, not input.
@@ -551,7 +551,7 @@ class FurnishingMass(om.ExplicitComponent):
         PAX = self.options[Aircraft.CrewPayload.Design.NUM_PASSENGERS]
         smooth = self.options[Aircraft.Design.SMOOTH_MASS_DISCONTINUITIES]
         empirical = self.options[Aircraft.Furnishings.USE_EMPIRICAL_EQUATION]
-        engine_type = self.options[Aircraft.Engine.TYPE][0]
+        engine_type = self.options[Aircraft.Engine.TYPE]
         mu = self.options['mu']
 
         num_pilots = get_num_of_pilots(PAX, engine_type)
@@ -617,7 +617,7 @@ class FurnishingMass(om.ExplicitComponent):
         PAX = self.options[Aircraft.CrewPayload.Design.NUM_PASSENGERS]
         smooth = self.options[Aircraft.Design.SMOOTH_MASS_DISCONTINUITIES]
         empirical = self.options[Aircraft.Furnishings.USE_EMPIRICAL_EQUATION]
-        engine_type = self.options[Aircraft.Engine.TYPE][0]
+        engine_type = self.options[Aircraft.Engine.TYPE]
         mu = self.options['mu']
 
         num_pilots = get_num_of_pilots(PAX, engine_type)
@@ -852,14 +852,14 @@ class UsefulLoadMass(om.ExplicitComponent):
         verbosity = self.options[Settings.VERBOSITY]
         PAX = self.options[Aircraft.CrewPayload.Design.NUM_PASSENGERS]
 
-        num_engines = self.options[Aircraft.Propulsion.TOTAL_NUM_ENGINES]
+        num_engine_type = self.options[Aircraft.Engine.NUM_ENGINES]
 
         wing_area = inputs[Aircraft.Wing.AREA]
         Fn_SLS = inputs[Aircraft.Engine.SCALED_SLS_THRUST]
         fuel_vol_frac = inputs[Aircraft.Fuel.WING_FUEL_FRACTION]
         uld_per_pax = self.options[Aircraft.CrewPayload.ULD_MASS_PER_PASSENGER][0]
 
-        engine_type = self.options[Aircraft.Engine.TYPE][0]
+        engine_type = self.options[Aircraft.Engine.TYPE]
         num_flight_attendants = get_num_of_flight_attendent(PAX)
         num_pilots = get_num_of_pilots(PAX, engine_type)
 
@@ -893,19 +893,32 @@ class UsefulLoadMass(om.ExplicitComponent):
         else:
             crew_bag_wt = 10.0 * (num_pilots + num_flight_attendants) + 25.0
 
-        if engine_type is GASPEngineType.TURBOJET:
-            oil_per_eng_wt = 0.0054 * Fn_SLS + 12.0
-        elif engine_type is GASPEngineType.TURBOSHAFT or engine_type is GASPEngineType.TURBOPROP:
-            oil_per_eng_wt = 0.0214 * Fn_SLS + 14
+        oil_per_eng_wt = np.zeros(len(engine_type))
+
+        if GASPEngineType.TURBOJET in engine_type:
+            turbojet_index = engine_type.index(GASPEngineType.TURBOJET)
+            oil_per_eng_wt[turbojet_index] = 0.0054 * Fn_SLS[turbojet_index] + 12.0
+
+        if GASPEngineType.TURBOSHAFT in engine_type:
+            turboshaft_index = engine_type.index(GASPEngineType.TURBOSHAFT)
+            oil_per_eng_wt[turboshaft_index] = 0.0214 * Fn_SLS[turboshaft_index] + 14
+
+        if GASPEngineType.TURBOPROP in engine_type:
+            turboprop_index = engine_type.index(GASPEngineType.TURBOPROP)
+            oil_per_eng_wt[turboprop_index] = 0.0214 * Fn_SLS[turboprop_index] + 14
+
         # else:
         #     oil_per_eng_wt = 0.062 * (Fn_SLS - 100) + 11
-        else:
+        if (
+            engine_type is not GASPEngineType.TURBOJET
+            or GASPEngineType.TURBOSHAFT
+            or GASPEngineType.TURBOPROP
+        ):
             # Other engine types are currently not supported in Aviary
             if verbosity > Verbosity.BRIEF:
                 print('This engine_type is not curretly supported in Aviary.')
-            oil_per_eng_wt = 0
 
-        oil_wt = num_engines * oil_per_eng_wt
+        oil_wt = np.dot(num_engine_type, oil_per_eng_wt)
 
         lavatories = get_num_of_lavatories(PAX)
 
@@ -983,21 +996,20 @@ class UsefulLoadMass(om.ExplicitComponent):
         wing_area = inputs[Aircraft.Wing.AREA]
         fuel_vol_frac = inputs[Aircraft.Fuel.WING_FUEL_FRACTION]
 
-        engine_type = self.options[Aircraft.Engine.TYPE][0]
+        engine_type = self.options[Aircraft.Engine.TYPE]
 
         num_pilots = get_num_of_pilots(PAX, engine_type)
 
         num_flight_attendants = get_num_of_flight_attendent(PAX)
 
-        if engine_type is GASPEngineType.TURBOJET:
-            doil_per_eng_wt_dFn_SLS = 0.0054
-        elif engine_type is GASPEngineType.TURBOSHAFT or engine_type is GASPEngineType.TURBOPROP:
-            doil_per_eng_wt_dFn_SLS = 0.0124
-        # else:
-        #     doil_per_eng_wt_dFn_SLS = 0.062
-        else:
-            # Other engine types are currently not supported in Aviary
-            doil_per_eng_wt_dFn_SLS = 0.0
+        doil_per_eng_wt_dFn_SLS = np.zeros(len(engine_type))
+
+        np.where(engine_type is GASPEngineType.TURBOJET, doil_per_eng_wt_dFn_SLS, 0.0054)
+        np.where(
+            engine_type is GASPEngineType.TURBOSHAFT or engine_type is GASPEngineType.TURBOPROP,
+            doil_per_eng_wt_dFn_SLS,
+            0.0124,
+        )
 
         dservice_wt_dmass_coeff_8 = 0.0
         if PAX > 9.0:
@@ -1038,7 +1050,7 @@ class UsefulLoadMass(om.ExplicitComponent):
             )
             dtrapped_fuel_wt_dfuel_vol_frac = 0.0
 
-        doil_wt_dFnSLS = num_engines * doil_per_eng_wt_dFn_SLS
+        doil_wt_dFnSLS = np.dot(num_engines, doil_per_eng_wt_dFn_SLS)
         duseful_mass_dFn_SLS = doil_wt_dFnSLS / GRAV_ENGLISH_LBM
 
         duseful_mass_dmass_coeff_8 = dservice_wt_dmass_coeff_8 / GRAV_ENGLISH_LBM
@@ -1202,7 +1214,7 @@ class BWBFurnishingMass(om.ExplicitComponent):
         PAX = self.options[Aircraft.CrewPayload.Design.NUM_PASSENGERS]
         smooth = self.options[Aircraft.Design.SMOOTH_MASS_DISCONTINUITIES]
         empirical = self.options[Aircraft.Furnishings.USE_EMPIRICAL_EQUATION]
-        engine_type = self.options[Aircraft.Engine.TYPE][0]
+        engine_type = self.options[Aircraft.Engine.TYPE]
         mu = self.options['mu']
 
         num_pilots = get_num_of_pilots(PAX, engine_type)
@@ -1267,7 +1279,7 @@ class BWBFurnishingMass(om.ExplicitComponent):
         PAX = self.options[Aircraft.CrewPayload.Design.NUM_PASSENGERS]
         smooth = self.options[Aircraft.Design.SMOOTH_MASS_DISCONTINUITIES]
         empirical = self.options[Aircraft.Furnishings.USE_EMPIRICAL_EQUATION]
-        engine_type = self.options[Aircraft.Engine.TYPE][0]
+        engine_type = self.options[Aircraft.Engine.TYPE]
         mu = self.options['mu']
 
         num_pilots = get_num_of_pilots(PAX, engine_type)

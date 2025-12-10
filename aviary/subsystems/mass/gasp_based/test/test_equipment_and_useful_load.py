@@ -20,6 +20,8 @@ from aviary.variable_info.enums import GASPEngineType
 from aviary.variable_info.functions import setup_model_options
 from aviary.variable_info.options import get_option_defaults
 from aviary.variable_info.variables import Aircraft, Mission, Settings
+from sqlalchemy import false
+from aviary.variable_info.functions import extract_options
 
 
 class FixedEquipMassTestCase1(unittest.TestCase):
@@ -1041,6 +1043,68 @@ class UsefulMassTestCase1(unittest.TestCase):
         tol = 1e-7
         assert_near_equal(
             self.prob[Aircraft.Design.FIXED_USEFUL_LOAD], 5341.42896854, tol
+        )  # modified from GASP value to account for updated crew mass. GASP value is 4932
+
+        partial_data = self.prob.check_partials(out_stream=None, method='cs')
+        assert_check_partials(partial_data, atol=8e-12, rtol=1e-12)
+
+
+class MultiEngineUsefulMassTestCase1(unittest.TestCase):
+    """this is the multi engine large single aisle 1 V3 test case"""
+
+    def setUp(self):
+        options = get_option_defaults(engine=False)
+        options.set_val(Aircraft.Engine.NUM_ENGINES, [2, 4])
+        options.set_val(Aircraft.Engine.TYPE, [GASPEngineType.TURBOPROP, GASPEngineType.TURBOJET])
+        # options.set_val(Aircraft.Propulsion.TOTAL_NUM_ENGINES, 6)
+        # options.set_val(Aircraft.Engine.SCALED_SLS_THRUST, [1000, 2000], 'lbf')
+
+        options.set_val(Aircraft.CrewPayload.Design.NUM_PASSENGERS, val=180, units='unitless')
+        options.set_val(Settings.VERBOSITY, 0)
+
+        self.prob = om.Problem()
+        self.prob.model.add_subsystem(
+            'useful',
+            UsefulLoadMass(),
+            promotes=['*'],
+        )
+
+        self.prob.model.set_input_defaults(
+            Aircraft.CrewPayload.PASSENGER_SERVICE_MASS_PER_PASSENGER, val=5.0, units='lbm'
+        )
+        self.prob.model.set_input_defaults(
+            Aircraft.CrewPayload.WATER_MASS_PER_OCCUPANT, val=3.0, units='lbm'
+        )
+        self.prob.model.set_input_defaults(
+            Aircraft.Design.EMERGENCY_EQUIPMENT_MASS, val=50.0, units='lbm'
+        )
+        self.prob.model.set_input_defaults(
+            Aircraft.CrewPayload.CATERING_ITEMS_MASS_PER_PASSENGER, val=7.6, units='lbm'
+        )
+        self.prob.model.set_input_defaults(
+            Aircraft.Fuel.UNUSABLE_FUEL_MASS_COEFFICIENT, val=12.0, units='unitless'
+        )
+        self.prob.model.set_input_defaults(Aircraft.Wing.AREA, val=1370.3, units='ft**2')
+        # self.prob.model.set_input_defaults(
+        #    Aircraft.Engine.NUM_ENGINES, val=[2, 4], units='lbf'
+        # )
+        self.prob.model.set_input_defaults(
+            Aircraft.Engine.SCALED_SLS_THRUST, val=[1000, 2000], units='lbf'
+        )
+        self.prob.model.set_input_defaults(
+            Aircraft.Fuel.WING_FUEL_FRACTION, val=0.6, units='unitless'
+        )
+        self.prob.model_options['*'] = extract_options(options)
+        # setup_model_options(self.prob, options)
+
+        self.prob.setup(check=False, force_alloc_complex=True)
+
+    def test_case1(self):
+        self.prob.run_model()
+
+        tol = 1e-7
+        assert_near_equal(
+            self.prob[Aircraft.Design.FIXED_USEFUL_LOAD], 5160.82896854, tol
         )  # modified from GASP value to account for updated crew mass. GASP value is 4932
 
         partial_data = self.prob.check_partials(out_stream=None, method='cs')
