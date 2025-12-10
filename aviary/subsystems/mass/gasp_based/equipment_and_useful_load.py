@@ -895,20 +895,18 @@ class UsefulLoadMass(om.ExplicitComponent):
 
         oil_per_eng_wt = np.zeros(len(engine_type))
 
-        np.where(
-            engine_type is GASPEngineType.TURBOJET,
-            oil_per_eng_wt,
-            0.0054 * Fn_SLS[engine_type is GASPEngineType.TURBOJET] + 12.0,
-        )
-        np.where(
-            engine_type is GASPEngineType.TURBOSHAFT or engine_type is GASPEngineType.TURBOPROP,
-            oil_per_eng_wt,
-            0.0214
-            * Fn_SLS[
-                engine_type is GASPEngineType.TURBOSHAFT or engine_type is GASPEngineType.TURBOPROP
-            ]
-            + 14,
-        )
+        if GASPEngineType.TURBOJET in engine_type:
+            turbojet_index = engine_type.index(GASPEngineType.TURBOJET)
+            oil_per_eng_wt[turbojet_index] = 0.0054 * Fn_SLS[turbojet_index] + 12.0
+
+        if GASPEngineType.TURBOSHAFT in engine_type:
+            turboshaft_index = engine_type.index(GASPEngineType.TURBOSHAFT)
+            oil_per_eng_wt[turboshaft_index] = 0.0214 * Fn_SLS[turboshaft_index] + 14
+
+        if GASPEngineType.TURBOPROP in engine_type:
+            turboprop_index = engine_type.index(GASPEngineType.TURBOPROP)
+            oil_per_eng_wt[turboprop_index] = 0.0214 * Fn_SLS[turboprop_index] + 14
+
         # else:
         #     oil_per_eng_wt = 0.062 * (Fn_SLS - 100) + 11
         if (
@@ -1009,7 +1007,7 @@ class UsefulLoadMass(om.ExplicitComponent):
         np.where(engine_type is GASPEngineType.TURBOJET, doil_per_eng_wt_dFn_SLS, 0.0054)
         np.where(
             engine_type is GASPEngineType.TURBOSHAFT or engine_type is GASPEngineType.TURBOPROP,
-            oil_per_eng_wt,
+            doil_per_eng_wt_dFn_SLS,
             0.0124,
         )
 
