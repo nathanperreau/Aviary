@@ -537,7 +537,7 @@ def extract_options(aviary_inputs: AviaryValues, metadata=_MetaData) -> dict:
 
 
 def setup_model_options(
-    prob: om.Problem,
+    prob,
     aviary_inputs: AviaryValues,
     meta_data=_MetaData,
     engine_models=None,
@@ -549,8 +549,8 @@ def setup_model_options(
 
     Parameters
     ----------
-    prob: Problem
-        OpenMDAO problem prior to setup.
+    prob: AviaryProblem
+        AviaryProblem prior to setup.
     aviary_inputs : AviaryValues
         Instance of AviaryValues containing all initial values.
     meta_data : dict
