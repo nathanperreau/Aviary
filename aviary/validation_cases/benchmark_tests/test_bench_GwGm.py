@@ -22,7 +22,7 @@ class ProblemPhaseTestCase(unittest.TestCase):
         _clear_problem_names()  # need to reset these to simulate separate runs
 
     @require_pyoptsparse(optimizer='IPOPT')
-    def test_bench_GwGm(self):
+    def test_bench_GwGm_IPOPT(self):
         local_phase_info = deepcopy(phase_info)
         prob = run_aviary(
             'models/aircraft/test_aircraft/aircraft_for_bench_GwGm.csv',
@@ -31,30 +31,32 @@ class ProblemPhaseTestCase(unittest.TestCase):
             verbosity=0,
         )
 
+        self.assertTrue(prob.result.success)
+
         rtol = 1e-3
 
         # There are no truth values for these.
         assert_near_equal(
             prob.get_val(Mission.Design.GROSS_MASS, units='lbm'),
-            171044.035,
+            171646.48312684,
             tolerance=rtol,
         )
 
         assert_near_equal(
-            prob.get_val(Aircraft.Design.OPERATING_MASS, units='lbm'),
-            94952.152,
+            prob.get_val(Mission.Summary.OPERATING_MASS, units='lbm'),
+            95100.07583783,
             tolerance=rtol,
         )
 
         assert_near_equal(
             prob.get_val(Mission.Summary.TOTAL_FUEL_MASS, units='lbm'),
-            40091.883,
+            40546.40728901,
             tolerance=rtol,
         )
 
         assert_near_equal(
             prob.get_val(Mission.Landing.GROUND_DISTANCE, units='ft'),
-            2660.33484,
+            2655.5028412,
             tolerance=rtol,
         )
 
@@ -62,7 +64,7 @@ class ProblemPhaseTestCase(unittest.TestCase):
 
         assert_near_equal(
             prob.get_val(Mission.Landing.TOUCHDOWN_MASS, units='lbm'),
-            135950.15,
+            136098.07583783,
             tolerance=rtol,
         )
 
@@ -76,30 +78,32 @@ class ProblemPhaseTestCase(unittest.TestCase):
             verbosity=0,
         )
 
+        self.assertTrue(prob.result.success)
+
         rtol = 1e-3
 
         # There are no truth values for these.
         assert_near_equal(
             prob.get_val(Mission.Design.GROSS_MASS, units='lbm'),
-            171044.0324,
+            171646.48312684,
             tolerance=rtol,
         )
 
         assert_near_equal(
-            prob.get_val(Aircraft.Design.OPERATING_MASS, units='lbm'),
-            94952.1511,
+            prob.get_val(Mission.Summary.OPERATING_MASS, units='lbm'),
+            95100.07583783,
             tolerance=rtol,
         )
 
         assert_near_equal(
             prob.get_val(Mission.Summary.TOTAL_FUEL_MASS, units='lbm'),
-            40091.8813,
+            40546.40728901,
             tolerance=rtol,
         )
 
         assert_near_equal(
             prob.get_val(Mission.Landing.GROUND_DISTANCE, units='ft'),
-            2660.3349,
+            2655.5028412,
             tolerance=rtol,
         )
 
@@ -107,7 +111,7 @@ class ProblemPhaseTestCase(unittest.TestCase):
 
         assert_near_equal(
             prob.get_val(Mission.Landing.TOUCHDOWN_MASS, units='lbm'),
-            135950.1511,
+            136098.07583783,
             tolerance=rtol,
         )
 

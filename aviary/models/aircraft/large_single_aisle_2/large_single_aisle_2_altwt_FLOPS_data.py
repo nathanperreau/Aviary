@@ -84,8 +84,8 @@ inputs.set_val(Aircraft.Fins.MASS_SCALER, 1.0)
 # Fuel
 # ---------------------------
 inputs.set_val(Aircraft.Fuel.AUXILIARY_FUEL_CAPACITY, 0.0, 'lbm')
-inputs.set_val(Aircraft.Fuel.CAPACITY_FACTOR, 25.903)
-inputs.set_val(Aircraft.Fuel.DENSITY_RATIO, 1.0)
+inputs.set_val(Aircraft.Fuel.WING_FUEL_FRACTION, 0.7752)
+inputs.set_val(Aircraft.Fuel.DENSITY, 6.7, 'lbm/galUS')
 inputs.set_val(Aircraft.Fuel.FUEL_SYSTEM_MASS_SCALER, 1.0)
 inputs.set_val(Aircraft.Fuel.NUM_TANKS, 7)
 inputs.set_val(Aircraft.Fuel.TOTAL_CAPACITY, 46063.0, 'lbm')
@@ -262,7 +262,7 @@ inputs.set_val(Settings.MASS_METHOD, LegacyCode.FLOPS)
 outputs.set_val(Aircraft.Design.EMPTY_MASS, 96288.0, 'lbm')
 outputs.set_val(Aircraft.Design.EMPTY_MASS_MARGIN, 492.0, 'lbm')
 outputs.set_val(Aircraft.Design.TOUCHDOWN_MASS, 146328.0, 'lbm')
-outputs.set_val(Aircraft.Design.OPERATING_MASS, 106360.0, 'lbm')
+outputs.set_val(Mission.Summary.OPERATING_MASS, 106360.0, 'lbm')
 propulsion_mass = 20275.0
 propulsion_mass_units = 'lbm'
 outputs.set_val(Aircraft.Propulsion.MASS, propulsion_mass, propulsion_mass_units)
@@ -273,8 +273,8 @@ sys_equip_mass = 32232.0
 sys_equip_mass_units = 'lbm'
 outputs.set_val(Aircraft.Design.SYSTEMS_EQUIP_MASS, sys_equip_mass, sys_equip_mass_units)
 outputs.set_val(Aircraft.Design.TOTAL_WETTED_AREA, 8319.07, 'ft**2')
-outputs.set_val(Aircraft.Design.ZERO_FUEL_MASS, 142837.0, 'lbm')
-outputs.set_val(Mission.Design.FUEL_MASS, 31363.0, 'lbm')
+outputs.set_val(Mission.Summary.ZERO_FUEL_MASS, 142837.0, 'lbm')
+outputs.set_val(Mission.Summary.FUEL_MASS, 31363.0, 'lbm')
 
 outputs.set_val(Aircraft.AirConditioning.MASS, 4212.0, 'lbm')
 

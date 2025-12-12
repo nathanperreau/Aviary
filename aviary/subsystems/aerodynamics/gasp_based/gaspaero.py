@@ -282,9 +282,13 @@ class BWBBodyLiftCurveSlope(om.ExplicitComponent):
     def compute(self, inputs, outputs):
         verbosity = self.options[Settings.VERBOSITY]
         mach = inputs[Dynamic.Atmosphere.MACH]
-        if any(x < 0.0 or x >= 1.0 for x in mach.real):
+
+        # Provide a little buffer for being close to the limit.
+        eps = 1e-8
+
+        if any(x < -eps or x >= 1.0 + eps for x in mach.real):
             raise om.AnalysisError('Mach number must be within the range (0, 1).')
-        elif any(x > 0.8 for x in mach.real):
+        elif any(x > 0.8 + eps for x in mach.real):
             if verbosity > Verbosity.BRIEF:
                 warnings.warn(
                     f"Mach range should be less or equal to 0.8. You've provided a Mach number {mach}."
@@ -857,7 +861,7 @@ class AeroGeom(om.ExplicitComponent):
         self.add_input(
             'interference_independent_of_shielded_area', units='unitless'
         )  # Is this used?
-        (self.add_input('drag_loss_due_to_shielded_wing_area', units='unitless'),)  # Is this used?
+        self.add_input('drag_loss_due_to_shielded_wing_area', units='unitless')  # Is this used?
         self.add_input(
             'siwb',
             units='unitless',
@@ -1030,6 +1034,9 @@ class AeroGeom(om.ExplicitComponent):
             areashieldwf,
             siwb,
         ) = inputs.values()
+        num_nodes = self.options['num_nodes']
+        num_engines = self.options[Aircraft.Engine.NUM_ENGINES]
+        num_engine_types = len(num_engines)
         # skin friction coeff at Re = 10**7
         cf = 0.455 / 7**2.58 / (1 + 0.144 * mach**2) ** 0.65
 
@@ -1048,7 +1055,7 @@ class AeroGeom(om.ExplicitComponent):
         # corresponding to Mach 0.1 at SLS) to help with takeoff. GASP doesn't call AERO
         # before takeoff, so the RELI used corresponds to the cruise point, and this
         # isn't a problem.
-        reli_y1 = 700000 * np.ones(self.options['num_nodes'])
+        reli_y1 = 700000 * np.ones(num_nodes)
         reli_y2 = sos * mach / nu
         sig = sigmoidX(mach, 0.1, mu=0.005)
         reli = (1 - sig) * reli_y1 + sig * reli_y2
@@ -1056,16 +1063,16 @@ class AeroGeom(om.ExplicitComponent):
         # Re correction factors: fuselage, wing, nacelle, vtail, htail, strut, tip tank
         # protect against Mach 0, any other small Mach should be ok
         dtype = complex if self.under_complex_step else float
-        ffre, fwre, fnre, fvtre, fhtre, fstrtre = np.ones(
-            (6, self.options['num_nodes']), dtype=dtype
-        )
+        ffre, fwre, fvtre, fhtre, fstrtre = np.ones((5, num_nodes), dtype=dtype)
+        fnre = np.ones((num_nodes, num_engine_types), dtype=dtype)
         if self.under_complex_step:
             good_mask = reli.real > 1
         else:
             good_mask = reli > 1
         ffre[good_mask] = (np.log10(reli[good_mask] * fus_len) / 7) ** -2.6
         fwre[good_mask] = (np.log10(reli[good_mask] * avg_chord) / 7) ** -2.6
-        fnre[good_mask] = (np.log10(reli[good_mask] * nac_len) / 7) ** -2.6
+        for i in range(num_engine_types):
+            fnre[i][good_mask] = (np.log10(reli[good_mask] * nac_len[i]) / 7) ** -2.6
         fvtre[good_mask] = (np.log10(reli[good_mask] * vtail_chord) / 7) ** -2.6
         fhtre[good_mask] = (np.log10(reli[good_mask] * htail_chord) / 7) ** -2.6
         include_strut = self.options[Aircraft.Wing.HAS_STRUT]
@@ -1079,8 +1086,9 @@ class AeroGeom(om.ExplicitComponent):
         # GASP uses different values of cf for wing, nacelle, fuselage, etc.
         fef = fus_SA * cf * ffre * ff_fus + fe_fus_inc
         few = ff_wing * wing_area * cf * fwre
-        # TODO replace 2 with num_engines
-        fen = 2 * ff_nac * nacelle_area * cf * fnre
+        fen = np.ones((num_nodes, num_engine_types), dtype=dtype)
+        for i in range(num_engine_types):
+            fen[i] = num_engines[i] * ff_nac[i] * nacelle_area[i] * cf * fnre[i]
         fevt = ff_vtail * vtail_area * cf * fvtre
         feht = ff_htail * htail_area * cf * fhtre
         festrt = strut_fus_intf * strut_wing_area_ratio * wing_area * cf * fstrtre
@@ -1094,8 +1102,8 @@ class AeroGeom(om.ExplicitComponent):
         # end INTERFERENCE
 
         # total flat plate equivalent area
-        # In GASP, nacelle is excluded.
-        fe = few + fef + fevt + feht + fen + feiwf + festrt + cd0_inc * wing_area
+        # In GASP, nacelle was excluded.
+        fe = few + fef + fevt + feht + fen.sum(axis=0) + feiwf + festrt + cd0_inc * wing_area
 
         # wfob = cabin_width / wingspan
         # siwb = 1 - 0.0088 * wfob - 1.7364 * wfob**2 - 2.303 * wfob**3 + 6.0606 * wfob**4

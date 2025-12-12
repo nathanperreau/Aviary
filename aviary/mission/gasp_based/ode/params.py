@@ -106,9 +106,9 @@ params_for_unit_tests = {
     Aircraft.VerticalTail.AREA: dict(units='ft**2', val=469.318),
     Aircraft.VerticalTail.SPAN: dict(units='ft', val=27.996),
     Aircraft.Fuselage.LENGTH: dict(units='ft', val=129.4),
-    Aircraft.Nacelle.AVG_LENGTH: dict(units='ft', val=14.5),
+    Aircraft.Nacelle.AVG_LENGTH: dict(units='ft', val=[14.5]),
     Aircraft.Fuselage.WETTED_AREA: dict(units='ft**2', val=4000),
-    Aircraft.Nacelle.SURFACE_AREA: dict(units='ft**2', val=659.23 / 2),
+    Aircraft.Nacelle.SURFACE_AREA: dict(units='ft**2', val=[659.23 / 2]),
     Aircraft.Wing.THICKNESS_TO_CHORD_UNWEIGHTED: dict(units='unitless', val=0.1397),
     Aircraft.Strut.CHORD: dict(
         units='ft', val=0
@@ -125,7 +125,7 @@ params_for_unit_tests = {
     Aircraft.Design.STATIC_MARGIN: dict(units='unitless', val=0.03),
     Aircraft.Design.CG_DELTA: dict(units='unitless', val=0.25),
     Aircraft.Fuselage.FORM_FACTOR: dict(units='unitless', val=1.25),
-    Aircraft.Nacelle.FORM_FACTOR: dict(units='unitless', val=1.5),
+    Aircraft.Nacelle.FORM_FACTOR: dict(units='unitless', val=[1.5]),
     Aircraft.Wing.FUSELAGE_INTERFERENCE_FACTOR: dict(units='unitless', val=1.1),
     Aircraft.Design.DRAG_COEFFICIENT_INCREMENT: dict(units='unitless', val=0.00175),
     Aircraft.Fuselage.FLAT_PLATE_AREA_INCREMENT: dict(units='ft**2', val=0.25),
