@@ -1,8 +1,8 @@
 import numpy as np
 import openmdao.api as om
 
-from aviary.constants import GRAV_ENGLISH_GASP, GRAV_ENGLISH_LBM, RHO_SEA_LEVEL_ENGLISH
-from aviary.variable_info.functions import add_aviary_input, add_aviary_output
+from aviary.constants import GRAV_ENGLISH_GASP, GRAV_ENGLISH_LBM
+from aviary.variable_info.functions import add_aviary_input, add_aviary_option, add_aviary_output
 from aviary.variable_info.variables import Aircraft, Dynamic, Mission
 
 
@@ -10,10 +10,10 @@ class LandingAltitudeComponent(om.ExplicitComponent):
     """Compute the landing altitude."""
 
     def setup(self):
-        add_aviary_input(self, Mission.Landing.OBSTACLE_HEIGHT, val=50.0)
-        add_aviary_input(self, Mission.Landing.AIRPORT_ALTITUDE, val=0.0)
+        add_aviary_input(self, Mission.Landing.OBSTACLE_HEIGHT)
+        add_aviary_input(self, Mission.Landing.AIRPORT_ALTITUDE)
 
-        add_aviary_output(self, Mission.Landing.INITIAL_ALTITUDE, val=0.0)
+        add_aviary_output(self, Mission.Landing.INITIAL_ALTITUDE)
 
         self.declare_partials(Mission.Landing.INITIAL_ALTITUDE, '*', val=1)
 
@@ -31,28 +31,30 @@ class LandingAltitudeComponent(om.ExplicitComponent):
 class GlideConditionComponent(om.ExplicitComponent):
     """Compute the initial conditions of the 2DOF glide phase."""
 
+    def initialize(self):
+        add_aviary_option(self, Mission.SEA_LEVEL_DENSITY, units='slug/ft**3')
+
     def setup(self):
-        add_aviary_input(self, Dynamic.Atmosphere.DENSITY, val=0.0, units='slug/ft**3')
-        add_aviary_input(self, Mission.Landing.MAXIMUM_SINK_RATE, val=900.0)
-        add_aviary_input(self, Dynamic.Vehicle.MASS, val=0.0, units='lbm')
-        add_aviary_input(self, Aircraft.Wing.AREA, val=1.0)
-        add_aviary_input(self, Mission.Landing.GLIDE_TO_STALL_RATIO, val=1.3)
+        add_aviary_input(self, Dynamic.Atmosphere.DENSITY, units='slug/ft**3')
+        add_aviary_input(self, Mission.Landing.MAXIMUM_SINK_RATE)
+        add_aviary_input(self, Dynamic.Vehicle.MASS, units='lbm')
+        add_aviary_input(self, Aircraft.Wing.AREA)
+        add_aviary_input(self, Mission.Landing.GLIDE_TO_STALL_RATIO)
         self.add_input(
             'CL_max', val=0.0, units='unitless', desc='CLMX: max CL at approach altitude'
         )
 
-        add_aviary_input(self, Mission.Landing.MAXIMUM_FLARE_LOAD_FACTOR, val=1.15)
-        add_aviary_input(self, Mission.Landing.TOUCHDOWN_SINK_RATE, val=5.0)
-        add_aviary_input(self, Mission.Landing.INITIAL_ALTITUDE, val=0.0)
-        add_aviary_input(self, Mission.Landing.BRAKING_DELAY, val=1.0)
+        add_aviary_input(self, Mission.Landing.MAXIMUM_FLARE_LOAD_FACTOR)
+        add_aviary_input(self, Mission.Landing.TOUCHDOWN_SINK_RATE)
+        add_aviary_input(self, Mission.Landing.INITIAL_ALTITUDE)
+        add_aviary_input(self, Mission.Landing.BRAKING_DELAY)
 
         add_aviary_output(
             self,
             Mission.Landing.INITIAL_VELOCITY,
-            val=0.0,
             desc='glide speed calculated using TAS_stall',
         )
-        add_aviary_output(self, Mission.Landing.STALL_VELOCITY, val=0.0)
+        add_aviary_output(self, Mission.Landing.STALL_VELOCITY)
 
         self.add_output('TAS_touchdown', val=0.0, units='ft/s', desc='VTD: touchdown speed')
         self.add_output(
@@ -215,11 +217,13 @@ class GlideConditionComponent(om.ExplicitComponent):
         tr_distance = ((RZ * theta) / 2.0) * ((1.0 - gamma_touchdown / theta) ** 2)
         delay_distance = TAS_touchdown * time_delay
 
+        rho_sea_level = self.options[Mission.SEA_LEVEL_DENSITY][0]
+
         outputs['flare_alt'] = flare_alt
         outputs[Mission.Landing.INITIAL_VELOCITY] = TAS_glide
         outputs[Mission.Landing.STALL_VELOCITY] = TAS_stall
         outputs['TAS_touchdown'] = TAS_touchdown
-        outputs['density_ratio'] = rho_app / RHO_SEA_LEVEL_ENGLISH
+        outputs['density_ratio'] = rho_app / rho_sea_level
         outputs['wing_loading_land'] = wing_loading_land
         outputs['glide_distance'] = glide_distance
         outputs['tr_distance'] = tr_distance
@@ -299,7 +303,8 @@ class GlideConditionComponent(om.ExplicitComponent):
             touchdown_velocity_ratio * dTasStall_dRhoApp
         )
 
-        J['density_ratio', Dynamic.Atmosphere.DENSITY] = 1 / RHO_SEA_LEVEL_ENGLISH
+        rho_sea_level = self.options[Mission.SEA_LEVEL_DENSITY][0]
+        J['density_ratio', Dynamic.Atmosphere.DENSITY] = 1 / rho_sea_level
 
         J['wing_loading_land', Dynamic.Vehicle.MASS] = GRAV_ENGLISH_LBM / wing_area
         J['wing_loading_land', Aircraft.Wing.AREA] = -weight / wing_area**2
@@ -534,7 +539,7 @@ class LandingGroundRollComponent(om.ExplicitComponent):
         self.add_input('touchdown_CD', val=0.0, units='unitless', desc='CDRL: CD at touchdown')
         self.add_input('touchdown_CL', val=0.0, units='unitless', desc='CLRL: CL at touchdown')
 
-        add_aviary_input(self, Mission.Landing.STALL_VELOCITY, val=0.0)
+        add_aviary_input(self, Mission.Landing.STALL_VELOCITY)
         self.add_input('TAS_touchdown', val=0.0, units='ft/s', desc='VTD: velocity at touchdown')
         self.add_input(
             'thrust_idle',
@@ -567,9 +572,9 @@ class LandingGroundRollComponent(om.ExplicitComponent):
         self.add_input(
             'CL_max', val=0.0, units='unitless', desc='CLMX: max CL at approach altitude'
         )
-        self.add_input(
+        add_aviary_input(
+            self,
             Dynamic.Vehicle.MASS,
-            val=0.0,
             units='lbm',
             desc='WL: aircraft mass at start of landing',
         )
@@ -577,7 +582,6 @@ class LandingGroundRollComponent(om.ExplicitComponent):
             self,
             Mission.Landing.BRAKING_FRICTION_COEFFICIENT,
             units='unitless',
-            desc='braking friction coefficient',
         )
 
         self.add_output(
@@ -586,7 +590,7 @@ class LandingGroundRollComponent(om.ExplicitComponent):
             units='ft',
             desc='DLG: distance during braked ground roll',
         )
-        add_aviary_output(self, Mission.Landing.GROUND_DISTANCE, val=0.0)
+        add_aviary_output(self, Mission.Landing.GROUND_DISTANCE)
         self.add_output(
             'average_acceleration',
             val=0.0,

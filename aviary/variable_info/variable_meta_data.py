@@ -17,6 +17,7 @@ from aviary.variable_info.enums import (
     AtmosphereModel,
 )
 from aviary.variable_info.variables import Aircraft, Dynamic, Mission, Settings
+import aviary.constants as Constants
 
 # ---------------------------
 # Meta data associated with variables in the aircraft data hierarchy.
@@ -2153,10 +2154,9 @@ add_meta_data(
 add_meta_data(
     Aircraft.Engine.INLET_AREA_COEFFICIENT,
     meta_data=_MetaData,
-    historical_name={'GASP': None, 'FLOPS': None, 'LEAPS1': None},
+    historical_name={'GASP': None, 'FLOPS': None},
     units='unitless',
-    option=True,
-    default_value=0.0002,  # default in GASP
+    default_value=0.0002,  # default in GASP (AE = .3 * WG/1500./ENP = 0.0002*WG/ENP)
     types=float,
     desc='engine inlet area coefficient. Suggested values: 0.000375 for modern engines.',
     multivalue=True,
@@ -3132,7 +3132,7 @@ add_meta_data(
     default_value=1.0,
 )
 
-# Misnamed. This sets if Aircraft.Furnishings.MASS_SCALER is used as a coefficient for additional
+# TODO Misnamed. This sets if Aircraft.Furnishings.MASS_SCALER is used as a coefficient for additional
 # furnishings weight and the alternative (False) is to use the emperical equation. The variable toggle
 # based on gross mass and num_pax is bad Aviary behavior and should occur in fortran_to_aviary instead
 add_meta_data(
@@ -6893,6 +6893,20 @@ add_meta_data(
 )
 
 add_meta_data(
+    Mission.GRAVITY,
+    meta_data=_MetaData,
+    historical_name={'GASP': None, 'FLOPS': None},
+    desc='Gravitational acceleration of the planet. This model is updated'
+    'in preprocess_options() based on which atmosphere is selected.'
+    'This ensures the gravity model matches the planet.',
+    types=float,
+    option=True,
+    #
+    units=Constants.GRAV_EARTH[1],
+    default_value=Constants.GRAV_EARTH[0],
+)
+
+add_meta_data(
     Mission.GROSS_MASS,
     meta_data=_MetaData,
     historical_name={'GASP': None, 'FLOPS': None},
@@ -6907,6 +6921,15 @@ add_meta_data(
     historical_name={'GASP': 'INGASP.WFUL', 'FLOPS': None},
     units='lbm',
     desc='Operating Items group. Includes crew, unusable fuel, and oil mass.',
+    default_value=0.0,
+)
+
+add_meta_data(
+    Mission.OPERATING_ITEMS_MASS_ADDITIONAL,
+    meta_data=_MetaData,
+    historical_name={'GASP': 'CW(16)', 'FLOPS': None},
+    units='lbm',
+    desc='Other operating items (e.g. external tanks, life rafts).',
     default_value=0.0,
 )
 
@@ -6962,6 +6985,18 @@ add_meta_data(
     units='lbm',
     desc='required fuel reserves: directly in lbm',
     default_value=0,
+)
+
+add_meta_data(
+    Mission.SEA_LEVEL_DENSITY,
+    meta_data=_MetaData,
+    historical_name={'GASP': None, 'FLOPS': None},
+    desc='Atmospheric density at seal level for this planet.',
+    types=float,
+    option=True,
+    # The default density model is set based on Settings.ATMOSPHERE_MODEL
+    units='kg/m**3',
+    default_value=1.225,
 )
 
 add_meta_data(
@@ -7070,16 +7105,6 @@ add_meta_data(
     'range, value should be zero at convergence (within acceptable '
     'tolerance)',
 )
-
-#  _____                 _
-# |  __ \               (_)
-# | |  | |   ___   ___   _    __ _   _ __
-# | |  | |  / _ \ / __| | |  / _` | | '_ \
-# | |__| | |  __/ \__ \ | | | (_| | | | | |
-# |_____/   \___| |___/ |_|  \__, | |_| |_|
-#                             __/ |
-#                            |___/
-# =========================================
 
 #  _                            _   _
 # | |                          | | (_)
@@ -7203,8 +7228,8 @@ add_meta_data(
     Mission.Landing.INITIAL_VELOCITY,
     meta_data=_MetaData,
     historical_name={
-        'GASP': 'INGASP.VGL',
-        'FLOPS': 'AERIN.VAPPR',
+        'GASP': 'VGL',  # DLAND
+        'FLOPS': None,  # output: SUMMARY VAPP
     },
     units='ft/s',
     desc='approach velocity',
@@ -7694,9 +7719,9 @@ add_meta_data(
     meta_data=_MetaData,
     historical_name={'GASP': None, 'FLOPS': None},
     units='unitless',
-    desc='speed during taxi, must be nonzero if pycycle is enabled',
-    option=True,
-    default_value=0.0001,
+    desc='speed during taxi',
+    option=False,
+    default_value=0.0,
 )
 
 #  .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .-----------------. .----------------.  .----------------.

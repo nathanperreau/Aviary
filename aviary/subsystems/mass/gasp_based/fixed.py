@@ -1,7 +1,7 @@
 import numpy as np
 import openmdao.api as om
 
-from aviary.constants import GRAV_ENGLISH_LBM, RHO_SEA_LEVEL_ENGLISH
+from aviary.constants import GRAV_ENGLISH_LBM
 from aviary.subsystems.mass.gasp_based.control import ControlMassGroup
 from aviary.subsystems.mass.gasp_based.engine import EngineMassGroup
 from aviary.subsystems.mass.gasp_based.landing import LandingGearMassGroup
@@ -35,7 +35,6 @@ class MassParameters(om.ExplicitComponent):
 
         self.add_input(
             'max_mach',
-            val=0.9,
             units='unitless',
             desc='EMM0: maximum operating Mach number',
         )
@@ -47,13 +46,11 @@ class MassParameters(om.ExplicitComponent):
         add_aviary_output(self, Aircraft.Wing.MATERIAL_FACTOR, units='unitless')
         self.add_output(
             'c_strut_braced',
-            val=0,
             units='unitless',
             desc='SKSTR: reduction in bending moment factor for strut braced wing',
         )
         self.add_output(
             'c_gear_loc',
-            val=0,
             units='unitless',
             desc='SKGEAR: landing gear location factor',
         )
@@ -63,7 +60,7 @@ class MassParameters(om.ExplicitComponent):
             shape=num_engine_type,
             units='unitless',
         )
-        self.add_output('half_sweep', val=0, units='rad', desc='SWC2: wing chord half sweep angle')
+        self.add_output('half_sweep', units='rad', desc='SWC2: wing chord half sweep angle')
 
     def setup_partials(self):
         self.declare_partials(
@@ -238,10 +235,9 @@ class PayloadGroup(om.ExplicitComponent):
         add_aviary_output(self, Aircraft.CrewPayload.PASSENGER_PAYLOAD_MASS, units='lbm')
         add_aviary_output(self, Aircraft.CrewPayload.TOTAL_PAYLOAD_MASS, units='lbm')
 
-        self.add_output('payload_mass_des', val=0, units='lbm', desc='WPLDES: design payload')
+        self.add_output('payload_mass_des', units='lbm', desc='WPLDES: design payload')
         self.add_output(
             'payload_mass_max',
-            val=0,
             units='lbm',
             desc='WPLMAX: maximum payload that the aircraft is being asked to carry'
             ' (design payload + cargo)',
@@ -281,25 +277,21 @@ class ElectricAugmentationMass(om.ExplicitComponent):
     def setup(self):
         self.add_input(
             'motor_power',
-            val=200,
             units='kW',
             desc='MOTRKW: power of augmentation motor',
         )
         self.add_input(
             'motor_voltage',
-            val=50,
             units='V',
             desc='VOLTS: voltage of augmentation system',
         )
         self.add_input(
             'max_amp_per_wire',
-            val=50,
             units='A',
             desc='AMPSPW: maximum amperage of each cable in augmentation system',
         )
         self.add_input(
             'safety_factor',
-            val=1.33,
             units='unitless',
             desc='REDUNCY: cable mass redundancy/safety factor',
         )
@@ -308,74 +300,62 @@ class ElectricAugmentationMass(om.ExplicitComponent):
 
         self.add_input(
             'wire_area',
-            val=0.0015,
             units='ft**2',
             desc='ACSWIRE: cross sectional area of electrical augmentation system wire',
         )
         self.add_input(
             'rho_wire',
-            val=1,
             units='lbm/ft**3',
             desc='DENWIRE: density of wire for electrical augmentation system',
         )
         self.add_input(
             'battery_energy',
-            val=1,
             units='MJ',
             desc='EBATT: energy coming from the battery',
         )
         self.add_input(
             'motor_eff',
-            val=1,
             units='unitless',
             desc='EFF_MTR: efficiency of electrical augmentation motor',
         )
         self.add_input(
             'inverter_eff',
-            val=1,
             units='unitless',
             desc='EFF_INV: efficiency of electrical augmentation inverter/controller',
         )
         self.add_input(
             'transmission_eff',
-            val=1,
             units='unitless',
             desc='EFF_TRN: efficiency of electrical augmentation system power transmission',
         )
         self.add_input(
             'battery_eff',
-            val=1,
             units='unitless',
             desc='EFF_BAT: efficiency of electrical augmentation battery storage',
         )
         self.add_input(
             'rho_battery',
-            val=200,
             units='MJ/lb',
             desc='ENGYDEN: energy density of electrical augmentation system battery',
         )
         self.add_input(
             'motor_spec_mass',
-            val=10,
             units='hp/lbm',
             desc='SWT_MTR: specific mass of electrical augmentation motor',
         )
         self.add_input(
             'inverter_spec_mass',
-            val=10,
             units='kW/lbm',
             desc='SWT_INV: specific mass of electrical augmentation inverter',
         )
         self.add_input(
             'TMS_spec_mass',
-            val=10,
             units='lbm/kW',
             desc='SWT_TMS: specific mass of thermal managements system',
         )
 
         self.add_output(
             'aug_mass',
-            val=0,
             units='lbm',
             desc='WEAUG: mass of electrical augmentation system',
         )
@@ -552,7 +532,7 @@ class HorizontalTailMass(om.ExplicitComponent):
         add_aviary_input(self, Aircraft.LandingGear.TAIL_HOOK_MASS_SCALER, units='unitless')
         add_aviary_input(self, Aircraft.HorizontalTail.TAPER_RATIO, units='unitless')
         add_aviary_input(self, Aircraft.HorizontalTail.AREA, units='ft**2')
-        self.add_input('min_dive_vel', val=200, units='kn', desc='VDMIN: dive velocity')
+        self.add_input('min_dive_vel', units='kn', desc='VDMIN: dive velocity')
         add_aviary_input(self, Aircraft.HorizontalTail.MOMENT_ARM, units='ft')
         add_aviary_input(self, Aircraft.HorizontalTail.THICKNESS_TO_CHORD, units='unitless')
         add_aviary_input(self, Aircraft.HorizontalTail.ROOT_CHORD, units='ft')
@@ -858,7 +838,7 @@ class VerticalTailMass(om.ExplicitComponent):
         add_aviary_input(self, Aircraft.VerticalTail.MASS_COEFFICIENT, units='unitless')
         add_aviary_input(self, Aircraft.Wing.SPAN, units='ft')
         add_aviary_input(self, Aircraft.HorizontalTail.AREA, units='ft**2')
-        self.add_input('min_dive_vel', val=200, units='kn', desc='VDMIN: dive velocity')
+        self.add_input('min_dive_vel', units='kn', desc='VDMIN: dive velocity')
         add_aviary_input(self, Aircraft.HorizontalTail.MOMENT_ARM, units='ft')
         add_aviary_input(self, Aircraft.HorizontalTail.THICKNESS_TO_CHORD, units='unitless')
         add_aviary_input(self, Aircraft.HorizontalTail.ROOT_CHORD, units='ft')
@@ -874,7 +854,6 @@ class VerticalTailMass(om.ExplicitComponent):
 
         self.add_output(
             'loc_MAC_vtail',
-            val=0,
             units='ft',
             desc='XVMAC: location of mean aerodynamic chord on the vertical tail',
         )
@@ -1327,6 +1306,7 @@ class HighLiftMass(om.ExplicitComponent):
     def initialize(self):
         add_aviary_option(self, Aircraft.Wing.FLAP_TYPE)
         add_aviary_option(self, Aircraft.Wing.NUM_FLAP_SEGMENTS)
+        add_aviary_option(self, Mission.SEA_LEVEL_DENSITY, units='slug/ft**3')
 
     def setup(self):
         add_aviary_input(self, Aircraft.Wing.HIGH_LIFT_MASS_COEFFICIENT, units='unitless')
@@ -1342,18 +1322,10 @@ class HighLiftMass(om.ExplicitComponent):
         add_aviary_input(self, Aircraft.Fuselage.AVG_DIAMETER, units='ft')
         add_aviary_input(self, Aircraft.Wing.CENTER_CHORD, units='ft')
         add_aviary_input(self, Mission.Landing.LIFT_COEFFICIENT_MAX, units='unitless')
-        self.add_input(
-            'density',
-            val=RHO_SEA_LEVEL_ENGLISH,
-            units='slug/ft**3',
-            desc='RHO: Density of air',
-        )
 
         add_aviary_output(self, Aircraft.Wing.HIGH_LIFT_MASS, units='lbm')
-        self.add_output(
-            'flap_mass', val=0, units='lbm', desc='WFLAP: mass of trailing edge devices'
-        )
-        self.add_output('slat_mass', val=0, units='lbm', desc='WLED: mass of leading edge devices')
+        self.add_output('flap_mass', units='lbm', desc='WFLAP: mass of trailing edge devices')
+        self.add_output('slat_mass', units='lbm', desc='WLED: mass of leading edge devices')
 
     def setup_partials(self):
         self.declare_partials(
@@ -1383,7 +1355,6 @@ class HighLiftMass(om.ExplicitComponent):
                 Aircraft.Wing.TAPER_RATIO,
                 Aircraft.Wing.FLAP_SPAN_RATIO,
                 Aircraft.Design.WING_LOADING,
-                'density',
                 Mission.Landing.LIFT_COEFFICIENT_MAX,
             ],
         )
@@ -1403,7 +1374,6 @@ class HighLiftMass(om.ExplicitComponent):
                 Aircraft.Wing.FLAP_SPAN_RATIO,
                 Aircraft.Wing.SLAT_SPAN_RATIO,
                 Aircraft.Design.WING_LOADING,
-                'density',
                 Mission.Landing.LIFT_COEFFICIENT_MAX,
             ],
         )
@@ -1424,7 +1394,7 @@ class HighLiftMass(om.ExplicitComponent):
         cabin_width = inputs[Aircraft.Fuselage.AVG_DIAMETER]
         center_chord = inputs[Aircraft.Wing.CENTER_CHORD]
         CL_max_flaps_landing = inputs[Mission.Landing.LIFT_COEFFICIENT_MAX]
-        RHO = inputs['density']
+        RHO = self.options[Mission.SEA_LEVEL_DENSITY][0]
 
         body_to_span_ratio = (
             2.0
@@ -1514,7 +1484,7 @@ class HighLiftMass(om.ExplicitComponent):
         cabin_width = inputs[Aircraft.Fuselage.AVG_DIAMETER]
         center_chord = inputs[Aircraft.Wing.CENTER_CHORD]
         CL_max_flaps_landing = inputs[Mission.Landing.LIFT_COEFFICIENT_MAX]
-        RHO = inputs['density']
+        RHO = self.options[Mission.SEA_LEVEL_DENSITY][0]
 
         u1 = tc_ratio_root * center_chord * (cabin_width - (tc_ratio_root * center_chord))
         body_to_span_ratio = (2 * np.sqrt(u1) + 0.4) / wingspan
@@ -1661,14 +1631,6 @@ class HighLiftMass(om.ExplicitComponent):
                 * num_flaps ** (-0.5)
                 / GRAV_ENGLISH_LBM
             )
-            J['flap_mass', 'density'] = (
-                c_mass_trend_high_lift
-                * (2 * VFLAP / 100**2)
-                * dVFLAP_drho
-                * SFLAP
-                * num_flaps ** (-0.5)
-                / GRAV_ENGLISH_LBM
-            )
             J['flap_mass', Mission.Landing.LIFT_COEFFICIENT_MAX] = (
                 c_mass_trend_high_lift
                 * (2 * VFLAP / 100**2)
@@ -1749,13 +1711,6 @@ class HighLiftMass(om.ExplicitComponent):
                     c_mass_trend_high_lift
                     * SFLAP
                     * (2.195 * VFLAP**1.195 * dVFLAP_dWL)
-                    / 45180.0
-                    / GRAV_ENGLISH_LBM
-                )
-                J['flap_mass', 'density'] = (
-                    c_mass_trend_high_lift
-                    * SFLAP
-                    * (2.195 * VFLAP**1.195 * dVFLAP_drho)
                     / 45180.0
                     / GRAV_ENGLISH_LBM
                 )
@@ -1846,13 +1801,6 @@ class HighLiftMass(om.ExplicitComponent):
                     * (0.2733 * VFLAP ** (-0.7267) * dVFLAP_dWL)
                     / GRAV_ENGLISH_LBM
                 )
-                J['flap_mass', 'density'] = (
-                    c_mass_trend_high_lift
-                    * SFLAP
-                    * 0.369
-                    * (0.2733 * VFLAP ** (-0.7267) * dVFLAP_drho)
-                    / GRAV_ENGLISH_LBM
-                )
 
                 J['flap_mass', Mission.Landing.LIFT_COEFFICIENT_MAX] = (
                     c_mass_trend_high_lift
@@ -1925,14 +1873,6 @@ class HighLiftMass(om.ExplicitComponent):
                 c_mass_trend_high_lift
                 * (2 * VFLAP / 100**2)
                 * dVFLAP_dWL
-                * SFLAP
-                * num_flaps**0.5
-                / GRAV_ENGLISH_LBM
-            )
-            J['flap_mass', 'density'] = (
-                c_mass_trend_high_lift
-                * (2 * VFLAP / 100**2)
-                * dVFLAP_drho
                 * SFLAP
                 * num_flaps**0.5
                 / GRAV_ENGLISH_LBM
@@ -2016,14 +1956,6 @@ class HighLiftMass(om.ExplicitComponent):
                 c_mass_trend_high_lift
                 * (2.38 * VFLAP**1.38 / 100.0**2.38)
                 * dVFLAP_dWL
-                * SFLAP**1.19
-                / (num_flaps**0.595)
-                / GRAV_ENGLISH_LBM
-            )
-            J['flap_mass', 'density'] = (
-                c_mass_trend_high_lift
-                * (2.38 * VFLAP**1.38 / 100.0**2.38)
-                * dVFLAP_drho
                 * SFLAP**1.19
                 / (num_flaps**0.595)
                 / GRAV_ENGLISH_LBM
@@ -2114,8 +2046,6 @@ class HighLiftMass(om.ExplicitComponent):
         J[Aircraft.Wing.HIGH_LIFT_MASS, Aircraft.Design.WING_LOADING] = J[
             'flap_mass', Aircraft.Design.WING_LOADING
         ]
-        J[Aircraft.Wing.HIGH_LIFT_MASS, 'density'] = J['flap_mass', 'density']
-
         J[Aircraft.Wing.HIGH_LIFT_MASS, Mission.Landing.LIFT_COEFFICIENT_MAX] = J[
             'flap_mass', Mission.Landing.LIFT_COEFFICIENT_MAX
         ]
@@ -2240,4 +2170,4 @@ class FixedMassGroup(om.Group):
                 inputs=['aug_mass'],
             )
 
-        self.set_input_defaults('min_dive_vel', val=420, units='kn')
+        self.set_input_defaults('min_dive_vel', units='kn')
