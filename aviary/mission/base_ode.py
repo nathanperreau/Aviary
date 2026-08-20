@@ -2,24 +2,17 @@ import openmdao.api as om
 
 from aviary.subsystems.atmosphere.atmosphere import Atmosphere
 from aviary.utils.aviary_values import AviaryValues
-from aviary.utils.functions import promote_aircraft_and_mission_vars
 from aviary.variable_info.variable_meta_data import CoreMetaData
-
-
-#
-class ExternalSubsystemGroup(om.Group):
-    """
-    Create a lightly modified version of an OM group to add external subsystems to the
-    ODE with a special configure() method that promotes all 'aircraft:*' and 'mission:*'
-    variables to the ODE.
-    """
-
-    def configure(self):
-        promote_aircraft_and_mission_vars(self)
 
 
 class BaseODE(om.Group):
     """The base class for all ODE components."""
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        # Turn on for all ODE systems.
+        self.options['auto_order'] = True
 
     def initialize(self):
         self.options.declare('num_nodes', default=1, types=int)
