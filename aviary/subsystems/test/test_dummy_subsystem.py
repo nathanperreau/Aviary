@@ -507,7 +507,7 @@ class FullSubsystemBuilder(SubsystemBuilder):
         }
 
     # true if the mission subsystem needs to be in the solver loop in mission
-    def needs_mission_solver(self, aviary_inputs, subsystem_options):
+    def needs_mission_solver(self, aviary_inputs, user_options, subsystem_options):
         return True
 
     # builds an OpenMDAO system for pre-mission computations.
@@ -551,9 +551,7 @@ class FullSubsystemBuilder(SubsystemBuilder):
 
     # Return a list of variable names that will be linked between phases...
     def get_linked_variables(self, aviary_inputs=None, user_options=None, subsystem_options=None):
-        # return []
         return [FullVariableSet.Dummy.DUMMY_STATE_VARIABLE]
-        # return [FullVariableSet.Dummy.DUMMY_MISSION_INPUT]
 
     # Might not need this
     # def get_bus_variables(self, aviary_inputs=None):
@@ -612,7 +610,7 @@ class FullSubsystemBuilder(SubsystemBuilder):
     def get_initial_guesses(self, aviary_inputs=None, user_options=None, subsystem_options=None):
         return {
             FullVariableSet.Dummy.DUMMY_STATE_VARIABLE: {
-                'val': 1.0,
+                'val': 10.0,
                 'type': 'state',
                 'units': 'm/s',
             }
@@ -625,7 +623,7 @@ class FullSubsystemBuilder(SubsystemBuilder):
     # Preprocess inputs to the subsystem, returning a modified AviaryValues object
     # modifies the inputs before they are set in the subsystem...
     def preprocess_inputs(self, aviary_inputs=None):
-        aviary_inputs.set_val(FullVariableSet.Dummy.DUMMY_MISSION_INPUT, 1.0, 'm**2')
+        aviary_inputs.set_val(FullVariableSet.Dummy.DUMMY_MISSION_INPUT, 5.0, 'm**2')
         return aviary_inputs
 
     # Replaced with get_timeseries
@@ -659,7 +657,11 @@ class FullSubsystemBuilder(SubsystemBuilder):
         return DummyFullPostMissionComp()
 
     def report(self, prob, reports_folder, **kwargs):
-        {}
+        filename = 'FullSubsystemTest.md'
+        filepath = filename
+
+        with open(filepath, mode='w') as f:
+            f.write(f'Test Report Written')
 
 
 class TestPreOnly(TestSubsystemBuilder):
