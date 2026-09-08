@@ -37,8 +37,8 @@
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=3683e473" />
     <link rel="stylesheet" type="text/css" href="../_static/version_switcher.css?v=516df71e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=3683e473" />
   
   <!-- So that users can add custom icons -->
   <script defer src="../_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
@@ -302,6 +302,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../examples/intro.html">Examples Outline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/simple_mission.html">Running a Simple Mission</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/custom_optimization.html">Running a Custom Optimization</a></li>
+
 <li class="toctree-l1"><a class="reference internal" href="../examples/reserve_mission.html">Running a Reserve Mission</a></li>
 <li class="toctree-l1"><a class="reference internal" href="more_advanced_example.html">Optimizing the Mission Profile of a Conventional Aircraft</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/off_design_missions.html">Off-Design Missions</a></li>
@@ -789,12 +790,12 @@ Total number of inequality constraints...............:      124
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Number of Iterations....: 44
 
                                    (scaled)                 (unscaled)
-Objective...............:   2.1871834676333911e+01    2.5517140455722896e+04
-Dual infeasibility......:   1.1101735652065951e-09    1.2952024927410275e-06
-Constraint violation....:   2.4130194634227659e-10    2.4130194634227659e-10
+Objective...............:   2.1871834676333950e+01    2.5517140455722940e+04
+Dual infeasibility......:   1.1101011162153428e-09    1.2951179689178998e-06
+Constraint violation....:   2.4130339992069673e-10    2.4130339992069673e-10
 Variable bound violation:   0.0000000000000000e+00    0.0000000000000000e+00
-Complementarity.........:   3.1624119734184429e-08    3.6894806356548498e-05
-Overall NLP error.......:   3.1624119734184429e-08    3.6894806356548498e-05
+Complementarity.........:   3.1624119734195434e-08    3.6894806356561339e-05
+Overall NLP error.......:   3.1624119734195434e-08    3.6894806356561339e-05
 
 
 Number of objective function evaluations             = 107
@@ -804,7 +805,7 @@ Number of inequality constraint evaluations          = 107
 Number of equality constraint Jacobian evaluations   = 48
 Number of inequality constraint Jacobian evaluations = 48
 Number of Lagrangian Hessian evaluations             = 0
-Total seconds in IPOPT                               = 55.223
+Total seconds in IPOPT                               = 63.728
 
 EXIT: Optimal Solution Found.
 
@@ -1050,12 +1051,12 @@ Total number of inequality constraints...............:      124
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Number of Iterations....: 44
 
                                    (scaled)                 (unscaled)
-Objective...............:   2.1871834676333968e+01    2.5517140455722962e+04
-Dual infeasibility......:   1.1101792065273390e-09    1.2952090742818953e-06
-Constraint violation....:   2.4130197937814983e-10    2.4130197937814983e-10
+Objective...............:   2.1871834676333844e+01    2.5517140455722816e+04
+Dual infeasibility......:   1.1100482210271150e-09    1.2950562578649673e-06
+Constraint violation....:   2.4130194634227664e-10    2.4130194634227664e-10
 Variable bound violation:   0.0000000000000000e+00    0.0000000000000000e+00
-Complementarity.........:   3.1624119734167872e-08    3.6894806356529179e-05
-Overall NLP error.......:   3.1624119734167872e-08    3.6894806356529179e-05
+Complementarity.........:   3.1624119734163200e-08    3.6894806356523731e-05
+Overall NLP error.......:   3.1624119734163200e-08    3.6894806356523731e-05
 
 
 Number of objective function evaluations             = 107
@@ -1065,10 +1066,7 @@ Number of inequality constraint evaluations          = 107
 Number of equality constraint Jacobian evaluations   = 48
 Number of inequality constraint Jacobian evaluations = 48
 Number of Lagrangian Hessian evaluations             = 0
-Total seconds in IPOPT                               = 55.153
-
-EXIT: Optimal Solution Found.
-
+Total seconds in IPOPT    
 
 Optimization Problem -- Optimization using pyOpt_sparse
 ================================================================================
@@ -1090,6 +1088,10 @@ Optimization Problem -- Optimization using pyOpt_sparse
    Constraints (i - inequality, e - equality)
       Index  Name                                                          Type          Lower           Value           Upper    Status  Lagrange Multiplier (N/A)
         186  mission1.gross_mass_resid                                        i   0.000000E+00    1.122580E-07    1.000000E+30         l    9.00000E+100
+
+                           = 63.274
+
+EXIT: Optimal Solution Found.
 </pre></div>
 </div>
 <div class="output text_html">

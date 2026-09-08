@@ -37,8 +37,8 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=3683e473" />
     <link rel="stylesheet" type="text/css" href="../../_static/version_switcher.css?v=516df71e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=3683e473" />
   
   <!-- So that users can add custom icons -->
   <script defer src="../../_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
@@ -298,6 +298,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../examples/intro.html">Examples Outline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../examples/simple_mission.html">Running a Simple Mission</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../examples/custom_optimization.html">Running a Custom Optimization</a></li>
+
 <li class="toctree-l1"><a class="reference internal" href="../../examples/reserve_mission.html">Running a Reserve Mission</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../examples_unreviewed/more_advanced_example.html">Optimizing the Mission Profile of a Conventional Aircraft</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../examples/off_design_missions.html">Off-Design Missions</a></li>
@@ -712,35 +713,35 @@ pre_mission.core_subsystems.mass
 +  NL: Newton 2 ; 8.10046913e-07 4.96478484e-11
 +  NL: Newton Converged
 req_fuel_mass &gt; max_wingfuel_mass, adding a body tank
-NL: Newton 0 ; 346844.212 1
+NL: Newton 0 ; 194101.56 1
 +  
 +  ========================================================
 +  pre_mission.core_subsystems.mass.wing_mass.isolated_mass
 +  ========================================================
 +  NL: Newton 0 ; 0 0
 +  NL: Newton Converged
-NL: Newton 1 ; 37944.9193 0.109400469
+NL: Newton 1 ; 10962.3676 0.0564774833
 +  
 +  ========================================================
 +  pre_mission.core_subsystems.mass.wing_mass.isolated_mass
 +  ========================================================
 +  NL: Newton 0 ; 0 0
 +  NL: Newton Converged
-NL: Newton 2 ; 66.6542367 0.000192173415
+NL: Newton 2 ; 59.5009671 0.000306545538
 +  
 +  ========================================================
 +  pre_mission.core_subsystems.mass.wing_mass.isolated_mass
 +  ========================================================
 +  NL: Newton 0 ; 0 0
 +  NL: Newton Converged
-NL: Newton 3 ; 0.000427698841 1.23311512e-09
+NL: Newton 3 ; 0.000381798608 1.96700433e-09
 +  
 +  ========================================================
 +  pre_mission.core_subsystems.mass.wing_mass.isolated_mass
 +  ========================================================
 +  NL: Newton 0 ; 0 0
 +  NL: Newton Converged
-NL: Newton 4 ; 7.27950946e-12 2.09878361e-17
+NL: Newton 4 ; 2.27373675e-13 1.17141601e-18
 NL: Newton Converged
 
 ==============================
@@ -772,7 +773,9 @@ NL: Newton 1 ; 1.4420568e-05 0.000194332998
 +  =================================================
 +  NL: Newton 0 ; 2.13138809e-21 1
 +  NL: Newton Converged
-NL: Newton 2 ; 2.56600034e-17 3.45796738e-16
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>NL: Newton 2 ; 2.56600034e-17 3.45796738e-16
 NL: Newton Converged
 
 ===============================
@@ -788,9 +791,7 @@ traj.phases.cruise.rhs_all.solver_sub
 +  traj.phases.cruise.rhs_all.solver_sub.aerodynamics
 +  ==================================================
 +  NL: Newton 0 ; 2.79973531e-06 1
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>+  NL: Newton 1 ; 4.7494371e-10 0.00016963879
++  NL: Newton 1 ; 4.7494371e-10 0.00016963879
 +  NL: Newton Converged
 NL: Newton 0 ; 0.0114615784 1
 +  
@@ -824,7 +825,9 @@ traj.phases.descent.rhs_all.solver_sub
 +  NL: Newton 0 ; 2.88331882e-06 1
 +  NL: Newton 1 ; 2.76091002e-10 9.57545869e-05
 +  NL: Newton Converged
-NL: Newton 0 ; 0.123936285 1
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>NL: Newton 0 ; 0.123936285 1
 +  
 +  ===================================================
 +  traj.phases.descent.rhs_all.solver_sub.aerodynamics
@@ -832,9 +835,7 @@ NL: Newton 0 ; 0.123936285 1
 +  NL: Newton 0 ; 2.49268862e-17 1
 +  NL: Newton Converged
 NL: Newton 1 ; 0.00368329355 0.0297192508
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>+  
++  
 +  ===================================================
 +  traj.phases.descent.rhs_all.solver_sub.aerodynamics
 +  ===================================================
